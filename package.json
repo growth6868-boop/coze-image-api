@@ -1,0 +1,11 @@
+{
+  "name": "nano-banana-async",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "p-queue": "^8.0.0"
+  }
+}
