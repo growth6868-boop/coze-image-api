@@ -29,8 +29,8 @@ export async function GET(request: Request) {
   try {
     // 构建请求体
     const requestBody: Record<string, any> = {
-      key: apiKey,
-      model: model, // 添加 model 参数
+      apikey: apiKey, // 改为 apikey 而不是 key
+      model: model,
       prompt: prompt
     };
     
@@ -59,19 +59,31 @@ export async function GET(request: Request) {
     if (!response.ok) {
       const errorData = await response.json();
       return NextResponse.json(
-        { error: errorData.message || 'Failed to generate image' },
+        { error: errorData.msg || errorData.message || 'Failed to generate image' },
         { status: response.status }
       );
     }
     
     const data = await response.json();
     
+    // 检查 API 是否返回错误码
+    if (data.code !== 0 && data.code !== undefined) {
+      return NextResponse.json(
+        { error: data.msg || 'API error' },
+        { status: 400 }
+      );
+    }
+    
+    // 从响应中获取图片 URL
+    const imageUrl = data.data?.url || data.data?.image_url || data.imageUrl || data.image_url || data.url;
+    
     return NextResponse.json({
       success: true,
       model: model,
       prompt: prompt,
-      imageUrl: data.imageUrl,
-      timestamp: Date.now()
+      imageUrl: imageUrl,
+      timestamp: Date.now(),
+      apiResponse: data // 调试用：返回完整 API 响应
     });
     
   } catch (error) {
