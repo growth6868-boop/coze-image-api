@@ -29,7 +29,6 @@ export async function GET(request: Request) {
   try {
     // 构建请求体
     const requestBody: Record<string, any> = {
-      apikey: apiKey, // 改为 apikey 而不是 key
       model: model,
       prompt: prompt
     };
@@ -47,48 +46,93 @@ export async function GET(request: Request) {
       requestBody.resolution = resolution;
     }
     
+    console.log('Request body:', requestBody);
+    console.log('Authorization header:', `Bearer ${apiKey}`);
+    
     // 调用 Grsai API Nano Banana 生图接口
+    // 请求方式为 POST，需要在 Authorization 请求头中传递 API Key
     const response = await fetch('https://grsai.dakka.com.cn/v1/draw/nano-banana', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify(requestBody)
     });
     
+    const responseText = await response.text();
+    console.log('API Response Status:', response.status);
+    console.log('API Response (first 300 chars):', responseText.substring(0, 300));
+    
     if (!response.ok) {
-      const errorData = await response.json();
       return NextResponse.json(
-        { error: errorData.msg || errorData.message || 'Failed to generate image' },
+        { error: `API Error: ${responseText || 'Failed to generate image'}` },
         { status: response.status }
       );
     }
     
-    const data = await response.json();
+    // 解析 SSE（Server-Sent Events）流式响应
+    // 格式为: data: {...}\n\ndata: {...}
+    const lines = responseText.split('\n');
+    let lastValidData = null;
+    
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const jsonStr = line.substring(6).trim();
+        if (jsonStr) {
+          try {
+            lastValidData = JSON.parse(jsonStr);
+            console.log('Parsed SSE data:', {
+              id: lastValidData.id,
+              status: lastValidData.status,
+              progress: lastValidData.progress,
+              results: lastValidData.results
+            });
+          } catch (e) {
+            console.error('Failed to parse SSE line:', jsonStr);
+          }
+        }
+      }
+    }
+    
+    // 使用最后一条有效的数据
+    const data = lastValidData;
     
     // 检查 API 是否返回错误码
-    if (data.code !== 0 && data.code !== undefined) {
+    if (data && data.code && data.code !== 0) {
       return NextResponse.json(
         { error: data.msg || 'API error' },
         { status: 400 }
       );
     }
     
-    // 从响应中获取图片 URL
-    const imageUrl = data.data?.url || data.data?.image_url || data.imageUrl || data.image_url || data.url;
+    if (!data) {
+      return NextResponse.json(
+        { error: 'No valid response from API' },
+        { status: 500 }
+      );
+    }
+    
+    // 从最后的流式响应中提取信息
+    const imageUrl = data.results?.image_url || data.results?.url || 
+                     (Array.isArray(data.results) && data.results[0]?.url);
     
     return NextResponse.json({
       success: true,
       model: model,
       prompt: prompt,
+      status: data.status,
+      progress: data.progress,
+      taskId: data.id,
       imageUrl: imageUrl,
       timestamp: Date.now(),
       apiResponse: data // 调试用：返回完整 API 响应
     });
     
   } catch (error) {
+    console.error('API Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error: ' + error.message },
+      { error: 'Internal server error: ' + (error instanceof Error ? error.message : 'Unknown error') },
       { status: 500 }
     );
   }
