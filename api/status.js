@@ -1,3 +1,5 @@
+const fetch = require('node-fetch');
+
 module.exports = async (req, res) => {
   const taskId = req.body.task_id || req.query.task_id;
 

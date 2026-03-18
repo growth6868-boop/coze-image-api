@@ -1,3 +1,5 @@
+const fetch = require('node-fetch');
+
 module.exports = async (req, res) => {
   const { prompt, image_urls, ratio, resolution } = req.body;
 
