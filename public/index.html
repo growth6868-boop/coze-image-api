@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coze Image API</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1 {
+      color: #000;
+      border-bottom: 2px solid #000;
+      padding-bottom: 0.5rem;
+    }
+    .endpoint {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+    code {
+      background: #e0e0e0;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Coze Image API</h1>
+  <p>Welcome to the Coze Image API - Async API for Nano Banana image generation.</p>
+  
+  <h2>Available Endpoints</h2>
+  
+  <div class="endpoint">
+    <h3>POST /api/generate</h3>
+    <p>Generate a new image from a prompt.</p>
+    <p><strong>Required:</strong> <code>prompt</code></p>
+    <p><strong>Optional:</strong> <code>image_urls</code>, <code>ratio</code>, <code>resolution</code></p>
+  </div>
+  
+  <div class="endpoint">
+    <h3>POST /api/status</h3>
+    <p>Check the status of an image generation task.</p>
+    <p><strong>Required:</strong> <code>task_id</code></p>
+  </div>
+  
+  <script type="module">
+    import { injectSpeedInsights } from 'https://cdn.jsdelivr.net/npm/@vercel/speed-insights@1/dist/index.mjs';
+    injectSpeedInsights();
+  </script>
+</body>
+</html>
