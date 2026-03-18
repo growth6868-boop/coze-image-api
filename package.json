@@ -1,11 +1,11 @@
 {
-  "name": "nano-banana-async",
+  "name": "coze-image-api",
   "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vercel dev"
-  },
+  "private": true,
   "dependencies": {
-    "p-queue": "^8.0.0"
+    "node-fetch": "^2.6.7"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
